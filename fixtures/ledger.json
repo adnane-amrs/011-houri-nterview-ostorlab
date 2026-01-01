@@ -1,0 +1,78 @@
+{
+  "schema": 2,
+  "jobs": [
+    {
+      "tenant": "amber",
+      "job_id": "scan-a",
+      "state": "queued",
+      "not_before": 18000,
+      "attempt_count": 0,
+      "last_finished_at": null,
+      "lease_until": null,
+      "retry_delay": 60,
+      "max_attempts": 3,
+      "label": "café"
+    },
+    {
+      "tenant": "amber",
+      "job_id": "scan-b",
+      "state": "running",
+      "not_before": 17000,
+      "attempt_count": 1,
+      "last_finished_at": 17940,
+      "lease_until": 18000,
+      "retry_delay": 60,
+      "max_attempts": 3,
+      "label": "worker observation"
+    },
+    {
+      "tenant": "amber",
+      "job_id": "scan-c",
+      "state": "done",
+      "not_before": 0,
+      "attempt_count": 1,
+      "last_finished_at": 17950,
+      "lease_until": null,
+      "retry_delay": 0,
+      "max_attempts": 1,
+      "label": "completed"
+    },
+    {
+      "tenant": "teal",
+      "job_id": "scan-a",
+      "state": "queued",
+      "not_before": 19000,
+      "attempt_count": 2,
+      "last_finished_at": 17900,
+      "lease_until": null,
+      "retry_delay": 60,
+      "max_attempts": 3,
+      "label": "other tenant"
+    }
+  ],
+  "attempts": [
+    {
+      "tenant": "amber",
+      "job_id": "scan-b",
+      "attempt_no": 1,
+      "outcome": "transient",
+      "finished_at": 17940
+    },
+    {
+      "tenant": "teal",
+      "job_id": "scan-a",
+      "attempt_no": 2,
+      "outcome": "transient",
+      "finished_at": 17900
+    },
+    {
+      "tenant": "amber",
+      "job_id": "scan-c",
+      "attempt_no": 1,
+      "outcome": "success",
+      "finished_at": 17950
+    }
+  ],
+  "audit": [],
+  "desk_note": "DEMO local fixture"
+}

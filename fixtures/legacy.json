@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "jobs": [
+    {
+      "tenant": "amber",
+      "job_id": "legacy-a",
+      "state": "queued",
+      "run_after_ms": 18000001,
+      "attempt_count": 0,
+      "last_finished_ms": null,
+      "lease_until_ms": null,
+      "retry_delay_ms": 0,
+      "max_attempts": 3,
+      "cancel_requested": false,
+      "label": "",
+      "custom": {
+        "reviewed": false
+      }
+    }
+  ],
+  "attempts": [],
+  "audit": [],
+  "desk_note": "retained"
+}

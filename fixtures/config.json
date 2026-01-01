@@ -1,0 +1,5 @@
+{
+  "queue_limit": 20,
+  "retry_delay": 60,
+  "max_attempts": 3
+}
