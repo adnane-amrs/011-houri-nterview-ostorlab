@@ -42,18 +42,24 @@ def build_summary(ledger: models.Record, tenant: str, now: int) -> models.Record
 
 
 def cancel_job(ledger: models.Record, tenant: str, job_id: str, reason: str, now: int) -> models.Record:
-    """Prepare an operator cancellation handoff."""
+    """Record a local cancellation request; it does not prove any remote work stopped."""
     _check(ledger, tenant, now)
     if isinstance(reason, str) is False or reason.strip() == "":
         raise models.Error("reason must be a nonblank string")
     result = copy.deepcopy(ledger)
     for job in result["jobs"]:
-        if job["job_id"] == job_id:
-            job["cancel_requested"] = True
-            job["lease_until"] = None
-            result["audit"].append({"tenant": tenant, "job_id": job_id,
-                                    "event": "cancelled", "at": now + 1, "reason": "operator request"})
+        if job["tenant"] != tenant or job["job_id"] != job_id:
+            continue
+        if job["state"] == "cancelled":
             return result
+        if job["state"] in ("done", "failed"):
+            raise models.Error(f"job {job_id} is {job['state']} and cannot be cancelled")
+        job["state"] = "cancelled"
+        job["lease_until"] = None
+        result["audit"].append({"tenant": tenant, "job_id": job_id,
+                                "event": "cancelled", "at": now, "reason": reason})
+        return result
+    # Missing and other-tenant identities share one message so tenants are not revealed.
     raise models.Error("job unavailable")
 
 

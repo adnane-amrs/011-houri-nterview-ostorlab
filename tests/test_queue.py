@@ -50,6 +50,31 @@ class QueueTest(unittest.TestCase):
                     queue.cancel_job(self.ledger, tenant, job_id, reason, 18000)
         self.assertEqual(self.ledger, original)
 
+    def testCancel_withRunningJobAtClockZero_clearsLeaseAndKeepsOtherFields(self) -> None:
+        result = queue.cancel_job(self.ledger, "amber", "scan-b", " keep spacing ", 0)
+        expected = dict(self.ledger["jobs"][1], state="cancelled", lease_until=None)
+        self.assertEqual(result["jobs"][1], expected)
+        self.assertNotIn("cancel_requested", result["jobs"][1])
+        self.assertEqual(result["audit"], [{"tenant": "amber", "job_id": "scan-b", "event": "cancelled", "at": 0, "reason": " keep spacing "}])
+        self.assertEqual(result["desk_note"], self.ledger["desk_note"])
+
+    def testCancel_withSharedIdInOtherTenant_changesOnlySelectedIdentity(self) -> None:
+        result = queue.cancel_job(self.ledger, "teal", "scan-a", "handoff", 18000)
+        self.assertEqual(result["jobs"][3]["state"], "cancelled")
+        self.assertEqual(result["jobs"][0], self.ledger["jobs"][0])
+        self.assertEqual(result["audit"][-1]["tenant"], "teal")
+
+    def testCancel_withFailedOrUnknownTargets_reportsConflictOrSameUnavailableError(self) -> None:
+        self.ledger["jobs"][2]["state"] = "failed"
+        with self.assertRaisesRegex(models.Error, "failed"):
+            queue.cancel_job(self.ledger, "amber", "scan-c", "handoff", 18000)
+        messages = []
+        for tenant, job_id in (("amber", "scan-z"), ("teal", "scan-b")):
+            with self.assertRaises(models.Error) as caught:
+                queue.cancel_job(self.ledger, tenant, job_id, "handoff", 18000)
+            messages.append(str(caught.exception))
+        self.assertEqual(messages, ["job unavailable", "job unavailable"])
+
     def testRecover_atLeaseBoundary_usesCompletionDeadlineAndIsIdempotent(self) -> None:
         original = copy.deepcopy(self.ledger)
         self.assertEqual(queue.recover_jobs(self.ledger, "amber", 17999), original)
